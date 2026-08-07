@@ -10,7 +10,6 @@ four of the ten challenges:
 - **10 — Trustworthy AI**
 
 **Live demo:** https://ai-powered-taxplatform.onrender.com
-(free-tier hosting — if it's asleep, the first load takes 30–60s to wake up)
 
 ---
 
@@ -27,7 +26,7 @@ scratch:
   with the headlines that drove the score. Maps onto challenge 08 (the
   confirm-before-verify pattern) and 10 (evidence-backed confidence).
 - An **ML-ops monitoring pipeline** with dashboards that rank returns/items
-  by "what needs a human right now," not by recency. Maps onto challenge 07.
+  by "what needs a human right now," not by recency. Maps onto challenge 07
 
 This prototype re-applies those same interaction patterns to tax prep — a
 different domain, the same underlying trust problem: an AI produced a
