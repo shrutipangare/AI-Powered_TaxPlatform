@@ -9,7 +9,7 @@ four of the ten challenges:
 - **08 — Clickable vs. Editable**
 - **10 — Trustworthy AI**
 
-**Live demo:** https://ai-powered-taxplatform.onrender.com
+**Live demo:** https://ai-powered-taxplatform.onrender.com (Will take a while to go live 15-20 secs once clicked)
 
 ---
 
