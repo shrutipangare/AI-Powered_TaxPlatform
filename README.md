@@ -1,10 +1,10 @@
-# GreenGrowth — AI Tax Platform Prototype
+# AI Tax Platform
 
-A greenfield prototype for the GreenGrowth AI Engineer case study, covering
+A prototype for the GreenGrowth AI Engineer case study, covering
 four of the ten challenges:
 
 - **01 — Source Document Traceability**
-- **06 — Return Status & Progress** (folded in — shares a data model with 07)
+- **06 — Return Status & Progress** (folded in - shares a data model with 07)
 - **07 — An Actionable Dashboard**
 - **08 — Clickable vs. Editable**
 - **10 — Trustworthy AI**
