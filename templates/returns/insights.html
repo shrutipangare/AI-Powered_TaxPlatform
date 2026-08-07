@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}AI Insights — {{ r.display_name }} — GreenGrowth{% endblock %}
+{% block content %}
+<div class="w-full px-8 py-8 md:px-12">
+  {% set active_tab = 'insights' %}
+  {% set view = 'staff' %}
+  {% include "partials/_return_header.html" %}
+
+  <div class="mt-6 grid gap-6 lg:grid-cols-[1fr_1.2fr]">
+    {% set selected_id = selected.id %}
+    {% include "partials/insight_list.html" %}
+    <div class="lg:sticky lg:top-6 lg:self-start">
+      {% include "partials/insight_detail.html" %}
+    </div>
+  </div>
+</div>
+{% endblock %}

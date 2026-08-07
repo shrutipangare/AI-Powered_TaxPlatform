@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}AI Insights — {{ r.display_name }} — GreenGrowth{% endblock %}
+{% block content %}
+<div class="w-full px-8 py-8 md:px-12">
+  {% set active_tab = 'insights' %}
+  {% set view = 'staff' %}
+  {% set pending_insights = 0 %}
+  {% include "partials/_return_header.html" %}
+  <div class="mt-6 rounded-lg border border-paper-line bg-paper-raised panel px-4 py-10 text-center">
+    <p class="text-sm text-ink-soft">No AI insights on this return — every field was either entered manually or verified without a flag.</p>
+  </div>
+</div>
+{% endblock %}

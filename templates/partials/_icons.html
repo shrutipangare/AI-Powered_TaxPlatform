@@ -1,0 +1,23 @@
+{# Small inline SVG icons (24x24 viewBox, currentColor stroke) — replaces
+   emoji across the shell/dashboard for a more deliberate, consistent look
+   that doesn't vary by OS emoji rendering. #}
+
+{% macro icon(name, size=16, cls='') %}
+{% set d = {
+  'leaf': 'M12 2C6 8 6 16 12 22C18 16 18 8 12 2ZM12 6v14',
+  'dashboard': 'M4 13h6V4H4v9zm0 7h6v-5H4v5zm10 0h6v-9h-6v9zm0-16v5h6V4h-6z',
+  'folder': 'M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z',
+  'user': 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm-7 8a7 7 0 0 1 14 0',
+  'users': 'M9 12a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zm7-1a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM2 20a6.5 6.5 0 0 1 13 0M15 14.5a5.5 5.5 0 0 1 7 5.3',
+  'search': 'M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm9 2-4.35-4.35',
+  'sparkles': 'M11 2l1.4 4.6L17 8l-4.6 1.4L11 14l-1.4-4.6L5 8l4.6-1.4L11 2zM19 14l.7 2.3L22 17l-2.3.7L19 20l-.7-2.3L16 17l2.3-.7L19 14z',
+  'warning': 'M12 3 2 20h20L12 3zm0 6v5m0 3h.01',
+  'reset': 'M3 12a9 9 0 1 0 3-6.7M3 4v5h5',
+  'chevron-left': 'M15 19 8 12l7-7',
+  'chevron-right': 'M9 5l7 7-7 7',
+  'eye': 'M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
+} %}
+<svg xmlns="http://www.w3.org/2000/svg" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="{{ cls }}">
+  <path d="{{ d[name] }}"></path>
+</svg>
+{% endmacro %}

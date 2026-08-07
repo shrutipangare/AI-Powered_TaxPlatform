@@ -1,0 +1,93 @@
+<div id="overview-body">
+{% set active_tab = 'overview' %}
+{% include "partials/_return_header.html" %}
+
+<div class="mt-6 grid gap-6 lg:grid-cols-3">
+  <div class="lg:col-span-2 space-y-6">
+    <div class="rounded-lg border border-paper-line bg-paper-raised panel p-5">
+      <h2 class="mb-4 text-sm font-semibold text-ink">Progress</h2>
+      <ol class="flex items-start justify-between gap-1">
+        {% for status in STATUS_PIPELINE %}
+        {% set meta = STATUS_META[status] %}
+        {% set is_done = loop.index0 < current_index %}
+        {% set is_current = loop.index0 == current_index %}
+        {% set label = meta.client_label if view == 'client' else meta.staff_label %}
+        <li class="flex flex-1 flex-col items-center text-center">
+          <div class="flex w-full items-center">
+            <div class="h-px flex-1 {{ 'opacity-0' if loop.first else ('bg-pine' if (is_done or is_current) else 'bg-paper-line') }}"></div>
+            {% if is_done %}
+              <span class="mx-1 shrink-0 text-pine">●</span>
+            {% elif is_current %}
+              <span class="mx-1 shrink-0 text-pine">◉</span>
+            {% else %}
+              <span class="mx-1 shrink-0 text-paper-line">○</span>
+            {% endif %}
+            <div class="h-px flex-1 {{ 'opacity-0' if loop.last else ('bg-pine' if is_done else 'bg-paper-line') }}"></div>
+          </div>
+          <span class="mt-2 max-w-[6.5rem] text-[11px] leading-tight font-medium {{ 'text-pine-dark' if is_current else ('text-ink-soft' if is_done else 'text-ink-faint') }}">
+            {{ label }}
+          </span>
+        </li>
+        {% endfor %}
+      </ol>
+    </div>
+
+    <div class="rounded-lg border border-paper-line bg-paper-raised panel p-5">
+      <h2 class="mb-4 text-sm font-semibold text-ink">{{ 'Updates' if view == 'client' else 'Activity' }}</h2>
+      {% if events|length == 0 %}
+        <p class="text-sm text-ink-faint">No activity yet.</p>
+      {% else %}
+        <ol class="space-y-4">
+          {% for e in events %}
+          <li class="flex gap-3">
+            <div class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-paper text-ink-faint text-xs">🕓</div>
+            <div>
+              <p class="text-sm text-ink">{{ e.action }}</p>
+              <p class="text-xs text-ink-faint">{{ (e.actor + ' · ') if view == 'staff' else '' }}{{ e.timestamp | date }}</p>
+            </div>
+          </li>
+          {% endfor %}
+        </ol>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="space-y-6">
+    <div class="rounded-lg border border-pine/30 bg-pine-soft/40 p-5">
+      <h2 class="mb-1 text-sm font-semibold text-pine-dark">What's next</h2>
+      <p class="text-sm text-ink">{{ next_step }}</p>
+      <p class="mt-3 text-xs font-medium text-ink-soft">Owner: <span class="capitalize">{{ 'You' if owner == 'client' else owner }}</span></p>
+    </div>
+
+    {% if view == 'staff' and r.blockers %}
+    <div class="rounded-lg border border-rust/30 bg-rust-soft p-5">
+      <h2 class="mb-2 flex items-center gap-1.5 text-sm font-semibold text-rust">⚠ Blocking this return</h2>
+      <ul class="space-y-1.5 text-sm text-ink">
+        {% for b in r.blockers %}
+        <li class="flex gap-1.5"><span class="text-rust">·</span> {{ b }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if show_blockers_to_client %}
+    <div class="rounded-lg border border-rust/30 bg-rust-soft p-5">
+      <h2 class="mb-2 flex items-center gap-1.5 text-sm font-semibold text-rust">⚠ We need something from you</h2>
+      <p class="text-sm text-ink">There's one open item we're working through together — your preparer will reach out with specifics, or you can check your messages for the request.</p>
+    </div>
+    {% endif %}
+
+    <div class="rounded-lg border border-paper-line bg-paper-raised panel p-5 text-sm">
+      <h2 class="mb-3 text-sm font-semibold text-ink">Key facts</h2>
+      <dl class="space-y-2">
+        <div class="flex items-center justify-between gap-3"><dt class="text-ink-faint">Due</dt><dd class="font-medium text-ink">{{ r.due_date | date }} ({{ r.due_date | relative_date }})</dd></div>
+        <div class="flex items-center justify-between gap-3"><dt class="text-ink-faint">Preparer</dt><dd class="font-medium text-ink">{{ r.assigned_preparer }}</dd></div>
+        {% if view == 'staff' and r.assigned_reviewer %}
+        <div class="flex items-center justify-between gap-3"><dt class="text-ink-faint">Reviewer</dt><dd class="font-medium text-ink">{{ r.assigned_reviewer }}</dd></div>
+        {% endif %}
+        <div class="flex items-center justify-between gap-3"><dt class="text-ink-faint">Documents on file</dt><dd class="font-medium text-ink">{{ r.document_count }}</dd></div>
+      </dl>
+    </div>
+  </div>
+</div>
+</div>

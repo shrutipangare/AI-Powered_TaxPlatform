@@ -1,0 +1,30 @@
+{% from "partials/_badges.html" import confidence_pill %}
+{% set status_meta = {
+  'pending': ('Needs your review', 'bg-gold-soft text-gold border-gold/30'),
+  'accepted': ('Accepted', 'bg-pine-soft text-pine-dark border-pine/30'),
+  'corrected': ('Corrected', 'bg-steel-soft text-steel border-steel/30'),
+  'dismissed': ('Dismissed', 'bg-slate-soft text-slate border-slate/30'),
+} %}
+{% set kind_meta = {
+  'extraction': ('Extraction', '✨'),
+  'recommendation': ('Recommendation', '💡'),
+  'warning': ('Warning', '⚠️'),
+} %}
+<div id="insight-list" {{ 'hx-swap-oob="true"' if oob | default(false) else '' }} class="space-y-2">
+  {% for insight in sorted_insights %}
+  {% set ist = insight_status(insight) %}
+  {% set label, cls = status_meta[ist] %}
+  {% set klabel, kicon = kind_meta[insight.kind] %}
+  <button
+    hx-get="{{ url_for('insight_detail_partial', return_id=r.id, insight=insight.id) }}"
+    hx-target="#insight-detail" hx-swap="outerHTML"
+    class="flex w-full flex-col items-start gap-2 rounded-lg border p-4 text-left transition-colors {{ 'border-pine/40 bg-pine-soft/40' if insight.id == selected_id else 'border-paper-line bg-paper hover:bg-paper-raised' }}">
+    <div class="flex w-full items-start justify-between gap-2">
+      <span class="flex items-center gap-1.5 text-xs font-medium text-ink-faint">{{ kicon }} {{ klabel }}</span>
+      <span class="rounded-full border px-2 py-0.5 text-[11px] font-medium {{ cls }}">{{ label }}</span>
+    </div>
+    <p class="text-sm font-medium text-ink">{{ insight.title }}</p>
+    {{ confidence_pill(insight.confidence) }}
+  </button>
+  {% endfor %}
+</div>

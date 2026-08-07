@@ -1,0 +1,113 @@
+{% from "partials/_badges.html" import field_state_badge, confidence_pill %}
+{% set st = field_state(selected) %}
+{% set val = field_value(selected) %}
+{% set note = field_note(selected.id) %}
+
+<div id="field-detail" class="rounded-lg border border-paper-line bg-paper-raised panel">
+  <div class="border-b border-paper-line p-5">
+    <div class="flex items-start justify-between gap-3">
+      <div>
+        <p class="text-xs font-medium uppercase tracking-wide text-ink-faint">{{ selected.section }}</p>
+        <h2 class="mt-0.5 font-heading text-lg font-semibold text-ink">{{ selected.label }}</h2>
+      </div>
+      {{ field_state_badge(st) }}
+    </div>
+    <p class="mt-3 font-ledger text-2xl font-semibold text-ink">{{ val }}</p>
+    {% if selected.ai_generated and selected.confidence is not none %}
+    <div class="mt-2">{{ confidence_pill(selected.confidence) }}</div>
+    {% endif %}
+  </div>
+
+  <div class="space-y-5 p-5">
+    {% if selected.transformation %}
+    <div>
+      <p class="mb-1 text-xs font-semibold uppercase tracking-wide text-ink-faint">How this value was derived</p>
+      <p class="text-sm text-ink-soft">{{ selected.transformation }}</p>
+    </div>
+    {% endif %}
+
+    {% if selected.sources %}
+    <div>
+      <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-faint">Source document{{ 's' if selected.sources|length > 1 }}</p>
+      <div class="space-y-2">
+        {% for src in selected.sources %}
+        {% if not loop.first %}
+        <div class="flex justify-center py-1 text-ink-faint">+</div>
+        {% endif %}
+        {% set doc = (r.documents | selectattr('id', 'equalto', src.document_id) | first) %}
+        <div class="rounded-md border border-paper-line bg-paper p-3">
+          <div class="mb-2 flex items-center gap-2 text-xs text-ink-soft">
+            <span>{{ doc.icon if doc else '📄' }}</span>
+            <span class="font-medium text-ink">{{ doc.name if doc else 'Unknown document' }}</span>
+            <span class="text-ink-faint">· page {{ src.page }}</span>
+          </div>
+          <p class="mb-1 text-[11px] font-medium text-ink-faint">{{ src.label }}</p>
+          <p class="rounded bg-paper-raised px-2.5 py-2 font-ledger text-xs text-ink">{{ src.excerpt }}</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if st == 'locked' and selected.locked_reason %}
+    <div class="rounded-md border border-slate/30 bg-slate-soft p-3">
+      <p class="flex items-center gap-1.5 text-xs font-semibold text-slate">🔒 Why this is locked</p>
+      <p class="mt-1 text-sm text-ink">{{ selected.locked_reason }}</p>
+    </div>
+    {% endif %}
+
+    {% if st == 'editable' %}
+    <div class="rounded-md border border-steel/30 bg-steel-soft p-3">
+      <p class="flex items-center gap-1.5 text-xs font-semibold text-steel">✏️ Editable field</p>
+      {% if note %}<p class="mt-1 text-xs text-rust">{{ note }}</p>{% endif %}
+      <form hx-post="{{ url_for('save_field', return_id=r.id, field_id=selected.id) }}" hx-target="#field-detail" hx-swap="outerHTML" class="mt-2 flex gap-2">
+        <input type="hidden" name="field" value="{{ selected.id }}">
+        <input name="value" value="{{ val }}" class="flex-1 rounded-md border border-paper-line bg-paper px-2.5 py-1.5 font-ledger text-sm text-ink focus:border-pine focus:outline-none">
+        <button type="submit" class="rounded-md bg-pine px-3 py-1.5 text-xs font-medium text-paper hover:bg-pine-dark">Save</button>
+      </form>
+      <p class="mt-2 text-xs text-ink-faint">Manually entered — not derived from AI extraction, so no source or confidence applies.</p>
+    </div>
+    {% endif %}
+
+    {% if st == 'ai_pending' %}
+    <div class="rounded-md border border-gold/30 bg-gold-soft p-3">
+      <p class="flex items-center gap-1.5 text-xs font-semibold text-gold">✨ Requires approval before it's used on the return</p>
+      <p class="mt-1 mb-3 text-sm text-ink">This value was extracted by AI and hasn't been confirmed yet. Approving locks it in as verified; rejecting sends it back for manual entry.</p>
+      {% if confirming %}
+      <div class="rounded-md border border-gold/40 bg-paper p-3">
+        <p class="mb-2 text-sm font-medium text-ink">Confirm — mark {{ val }} as verified?</p>
+        <div class="flex gap-2">
+          <form hx-post="{{ url_for('approve_field', return_id=r.id, field_id=selected.id) }}" hx-target="#field-detail" hx-swap="outerHTML">
+            <button type="submit" class="flex items-center gap-1.5 rounded-md bg-pine px-3 py-1.5 text-xs font-medium text-paper hover:bg-pine-dark">✓ Yes, mark verified</button>
+          </form>
+          <button hx-get="{{ url_for('field_detail_partial', return_id=r.id, field=selected.id) }}" hx-target="#field-detail" hx-swap="outerHTML"
+            class="rounded-md border border-paper-line px-3 py-1.5 text-xs font-medium text-ink-soft hover:bg-paper-raised">Cancel</button>
+        </div>
+      </div>
+      {% else %}
+      <div class="flex gap-2">
+        <button hx-get="{{ url_for('field_detail_partial', return_id=r.id, field=selected.id, confirming=selected.id) }}" hx-target="#field-detail" hx-swap="outerHTML"
+          class="flex items-center gap-1.5 rounded-md bg-pine px-3 py-1.5 text-xs font-medium text-paper hover:bg-pine-dark">✓ Approve</button>
+        <form hx-post="{{ url_for('reject_field', return_id=r.id, field_id=selected.id) }}" hx-target="#field-detail" hx-swap="outerHTML">
+          <button type="submit" class="flex items-center gap-1.5 rounded-md border border-paper-line px-3 py-1.5 text-xs font-medium text-ink-soft hover:bg-rust-soft hover:text-rust">✕ Reject</button>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% if st == 'verified' %}
+    <div class="rounded-md border border-pine/30 bg-pine-soft/50 p-3">
+      <p class="flex items-center gap-1.5 text-xs font-semibold text-pine-dark">✅ Verified</p>
+      <p class="mt-1 text-sm text-ink">
+        {% if selected.verified_by %}{{ selected.verified_by }}{% if selected.verified_at %} · {{ selected.verified_at | date }}{% endif %}{% else %}Approved just now.{% endif %}
+      </p>
+      {% if selected.state != 'verified' %}
+      <form hx-post="{{ url_for('revert_field', return_id=r.id, field_id=selected.id) }}" hx-target="#field-detail" hx-swap="outerHTML">
+        <button type="submit" class="mt-2 flex items-center gap-1 text-xs font-medium text-ink-faint hover:text-ink">↺ Revert to pending</button>
+      </form>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>

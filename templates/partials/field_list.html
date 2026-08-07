@@ -1,0 +1,22 @@
+{% from "partials/_badges.html" import field_state_badge %}
+<div id="field-list" {{ 'hx-swap-oob="true"' if oob | default(false) else '' }} class="space-y-6">
+  {% for section, section_fields in sections %}
+  <div>
+    <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-faint">{{ section }}</h3>
+    <div class="overflow-hidden rounded-lg border border-paper-line">
+      {% for f in section_fields %}
+      <button
+        hx-get="{{ url_for('field_detail_partial', return_id=r.id, field=f.id) }}"
+        hx-target="#field-detail" hx-swap="outerHTML"
+        class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors {{ 'border-t border-paper-line' if not loop.first }} {{ 'bg-pine-soft/50' if f.id == selected_id else 'bg-paper hover:bg-paper-raised' }}">
+        <div class="min-w-0">
+          <p class="truncate text-sm font-medium text-ink">{{ f.label }}</p>
+          <p class="mt-0.5 font-ledger text-sm text-ink-soft">{{ field_value(f) }}</p>
+        </div>
+        {{ field_state_badge(field_state(f), compact=true) }}
+      </button>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</div>

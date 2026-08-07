@@ -1,0 +1,61 @@
+{% from "partials/_badges.html" import status_badge, priority_badge %}
+<div>
+  <a href="{{ url_for('dashboard') }}" class="mb-3 inline-flex items-center gap-1 text-xs font-medium text-ink-soft hover:text-pine">
+    ← Back to dashboard
+  </a>
+
+  <div class="flex flex-wrap items-start justify-between gap-4">
+    <div>
+      <h1 class="font-heading text-2xl font-semibold text-ink">{{ r.display_name }}</h1>
+      <p class="mt-0.5 text-sm text-ink-soft">
+        {% if r.business_name %}{{ r.client_name }} · {% endif %}
+        {{ 'Business return' if r.type == 'business' else 'Individual return' }} · Tax year {{ r.tax_year }} · {{ r.id }}
+      </p>
+      <div class="mt-3 flex flex-wrap items-center gap-2">
+        {{ status_badge(r.status, mode=view) }}
+        {{ priority_badge(r.priority) }}
+        <span class="text-xs text-ink-faint">Due {{ r.due_date | relative_date }} · {{ r.assigned_preparer }}</span>
+      </div>
+    </div>
+
+    {% if active_tab == 'overview' %}
+    <div class="flex flex-col items-end gap-1.5">
+      <span class="text-[11px] font-medium uppercase tracking-wide text-ink-faint">Preview as</span>
+      <div class="inline-flex rounded-md border border-paper-line bg-paper-raised p-0.5">
+        <a href="?view=staff"
+           hx-get="{{ request.path }}?view=staff" hx-target="#overview-body" hx-swap="outerHTML" hx-push-url="true"
+           class="flex items-center gap-1.5 rounded px-2.5 py-1 text-xs font-medium transition-colors {{ 'bg-paper text-ink shadow-sm' if view == 'staff' else 'text-ink-soft' }}">
+          👤 Staff
+        </a>
+        <a href="?view=client"
+           hx-get="{{ request.path }}?view=client" hx-target="#overview-body" hx-swap="outerHTML" hx-push-url="true"
+           class="flex items-center gap-1.5 rounded px-2.5 py-1 text-xs font-medium transition-colors {{ 'bg-paper text-ink shadow-sm' if view == 'client' else 'text-ink-soft' }}">
+          👁 Client
+        </a>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <nav class="mt-6 flex gap-1 border-b border-paper-line">
+    <a href="{{ url_for('return_overview', return_id=r.id) }}"
+       class="relative -mb-px flex items-center gap-1.5 border-b-2 px-3 py-2.5 text-sm font-medium transition-colors {{ 'border-pine text-pine-dark' if active_tab == 'overview' else 'border-transparent text-ink-soft hover:text-ink' }}">
+      Overview
+    </a>
+    {% if r.fields %}
+    <a href="{{ url_for('return_review', return_id=r.id) }}"
+       class="relative -mb-px flex items-center gap-1.5 border-b-2 px-3 py-2.5 text-sm font-medium transition-colors {{ 'border-pine text-pine-dark' if active_tab == 'review' else 'border-transparent text-ink-soft hover:text-ink' }}">
+      Review &amp; Traceability
+    </a>
+    {% endif %}
+    {% if r.insights %}
+    <a href="{{ url_for('return_insights', return_id=r.id) }}"
+       class="relative -mb-px flex items-center gap-1.5 border-b-2 px-3 py-2.5 text-sm font-medium transition-colors {{ 'border-pine text-pine-dark' if active_tab == 'insights' else 'border-transparent text-ink-soft hover:text-ink' }}">
+      AI Insights
+      {% if pending_insights %}
+      <span class="rounded-full bg-gold-soft px-1.5 py-0.5 text-[10px] font-semibold text-gold">{{ pending_insights }}</span>
+      {% endif %}
+    </a>
+    {% endif %}
+  </nav>
+</div>

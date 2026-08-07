@@ -1,0 +1,105 @@
+{% from "partials/_badges.html" import confidence_pill %}
+{% set kind_meta = {
+  'extraction': ('Extraction', '✨'),
+  'recommendation': ('Recommendation', '💡'),
+  'warning': ('Warning', '⚠️'),
+}[selected.kind] %}
+{% set kind_label, kind_icon = kind_meta %}
+{% set sstatus = insight_status(selected) %}
+
+<div id="insight-detail" class="rounded-lg border border-paper-line bg-paper-raised panel p-5">
+  <div class="mb-1 flex items-center gap-2">
+    <span class="text-ink-soft">{{ kind_icon }}</span>
+    <span class="text-xs font-medium uppercase tracking-wide text-ink-faint">{{ kind_label }}</span>
+  </div>
+  <h2 class="font-heading text-lg font-semibold text-ink">{{ selected.title }}</h2>
+  <p class="mt-2 text-sm text-ink-soft">{{ selected.message }}</p>
+
+  <div class="mt-3 flex items-center gap-2">
+    {{ confidence_pill(selected.confidence) }}
+    {% if selected.uncertainty_note %}<span class="text-xs text-ink-faint">why not higher?</span>{% endif %}
+  </div>
+  {% if selected.uncertainty_note %}
+  <p class="mt-1.5 rounded-md border border-gold/30 bg-gold-soft px-3 py-2 text-xs text-ink">{{ selected.uncertainty_note }}</p>
+  {% endif %}
+
+  <div class="mt-5">
+    <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-faint">Evidence</p>
+    <div class="space-y-2">
+      {% for ev in selected.evidence %}
+      <div class="rounded-md border p-3 {{ 'border-pine/25 bg-pine-soft/30' if ev.weight == 'supports' else 'border-rust/25 bg-rust-soft/40' }}">
+        <div class="flex items-start gap-2">
+          <span class="mt-0.5 shrink-0 {{ 'text-pine' if ev.weight == 'supports' else 'text-rust' }}">{{ '✓' if ev.weight == 'supports' else '✕' }}</span>
+          <div class="min-w-0">
+            <p class="text-sm font-medium text-ink">{{ ev.label }}</p>
+            <p class="mt-0.5 text-xs text-ink-soft">{{ ev.detail }}</p>
+            {% if ev.source %}
+            <p class="mt-1.5 flex items-center gap-1 text-[11px] text-ink-faint">source: p.{{ ev.source.page }} — "{{ ev.source.excerpt }}"</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="mt-5 rounded-md border border-steel/25 bg-steel-soft p-3">
+    <p class="text-xs font-semibold text-steel">Suggested action</p>
+    <p class="mt-1 text-sm text-ink">{{ selected.suggested_action }}</p>
+  </div>
+
+  <div class="mt-5">
+    {% if sstatus == 'pending' %}
+      {% if correcting %}
+      <form hx-post="{{ url_for('correct_insight', return_id=r.id, insight_id=selected.id) }}" hx-target="#insight-detail" hx-swap="outerHTML"
+            class="rounded-md border border-paper-line bg-paper p-3">
+        <p class="mb-2 text-xs font-semibold text-ink">Correct this {{ selected.kind }}</p>
+        <label class="mb-2 block">
+          <span class="mb-1 block text-xs text-ink-faint">Correct value</span>
+          <input name="value" placeholder="e.g. $1,290.00" required
+            class="w-full rounded-md border border-paper-line bg-paper-raised px-2.5 py-1.5 font-ledger text-sm text-ink focus:border-pine focus:outline-none">
+        </label>
+        <label class="mb-3 block">
+          <span class="mb-1 block text-xs text-ink-faint">Why (optional, helps retraining)</span>
+          <textarea name="note" rows="2" class="w-full rounded-md border border-paper-line bg-paper-raised px-2.5 py-1.5 text-sm text-ink focus:border-pine focus:outline-none"></textarea>
+        </label>
+        <div class="flex gap-2">
+          <button type="submit" class="rounded-md bg-pine px-3 py-1.5 text-xs font-medium text-paper hover:bg-pine-dark">Submit correction</button>
+          <button type="button" hx-get="{{ url_for('insight_detail_partial', return_id=r.id, insight=selected.id) }}" hx-target="#insight-detail" hx-swap="outerHTML"
+            class="rounded-md border border-paper-line px-3 py-1.5 text-xs font-medium text-ink-soft hover:bg-paper-raised">Cancel</button>
+        </div>
+      </form>
+      {% else %}
+      <div class="flex flex-wrap gap-2">
+        <form hx-post="{{ url_for('accept_insight', return_id=r.id, insight_id=selected.id) }}" hx-target="#insight-detail" hx-swap="outerHTML">
+          <button type="submit" class="flex items-center gap-1.5 rounded-md bg-pine px-3 py-1.5 text-xs font-medium text-paper hover:bg-pine-dark">✓ Accept</button>
+        </form>
+        <button hx-get="{{ url_for('insight_detail_partial', return_id=r.id, insight=selected.id, correcting=selected.id) }}" hx-target="#insight-detail" hx-swap="outerHTML"
+          class="flex items-center gap-1.5 rounded-md border border-paper-line px-3 py-1.5 text-xs font-medium text-ink-soft hover:bg-paper">✏️ This isn't right</button>
+        <form hx-post="{{ url_for('dismiss_insight', return_id=r.id, insight_id=selected.id) }}" hx-target="#insight-detail" hx-swap="outerHTML">
+          <button type="submit" class="flex items-center gap-1.5 rounded-md border border-paper-line px-3 py-1.5 text-xs font-medium text-ink-faint hover:bg-paper">🚫 Dismiss</button>
+        </form>
+      </div>
+      {% endif %}
+    {% elif sstatus == 'accepted' %}
+      <p class="flex items-center gap-1.5 text-sm font-medium text-pine-dark">✅ Accepted — this stands as-is.</p>
+    {% elif sstatus == 'corrected' %}
+      <div class="rounded-md border border-steel/30 bg-steel-soft p-3">
+        <p class="flex items-center gap-1.5 text-xs font-semibold text-steel">✏️ Corrected by preparer</p>
+        <p class="mt-1 text-sm text-ink">New value: {{ insight_corrected_value(selected) }}</p>
+        {% if insight_correction_note(selected) %}
+        <p class="mt-1 text-xs text-ink-soft">Note: {{ insight_correction_note(selected) }}</p>
+        {% endif %}
+      </div>
+      {% if insight_correction_summary(selected) %}
+      <div class="mt-2 rounded-md border border-pine/30 bg-pine-soft/50 p-3">
+        <p class="flex items-center gap-1.5 text-xs font-semibold text-pine-dark">✨ AI-generated audit summary</p>
+        <p class="mt-1 text-sm text-ink">{{ insight_correction_summary(selected) }}</p>
+        <p class="mt-1.5 text-[11px] text-ink-faint">Live Claude API call — generated from the note above for the retraining/audit log, not pre-written.</p>
+      </div>
+      {% endif %}
+    {% elif sstatus == 'dismissed' %}
+      <p class="flex items-center gap-1.5 text-sm font-medium text-slate">🚫 Dismissed — no action taken on the return.</p>
+    {% endif %}
+  </div>
+</div>

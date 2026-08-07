@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}GreenGrowth — Return Workspace{% endblock %}</title>
+<script>
+  // Applied before first paint so there's no flash of the wrong theme.
+  // Falls back to OS preference until the user picks explicitly, then
+  // remembers their pick in localStorage.
+  (function () {
+    var saved = localStorage.getItem('gg-theme');
+    var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', theme);
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script defer src="https://unpkg.com/alpinejs@3.13.5/dist/cdn.min.js"></script>
+<script src="https://unpkg.com/htmx.org@1.9.12/dist/htmx.min.js"></script>
+<style>
+  :root {
+    --paper: 255 255 255; --paper-raised: 246 247 244; --paper-line: 227 229 223;
+    --ink: 24 32 27; --ink-soft: 82 94 85; --ink-faint: 133 140 128;
+    --pine: 22 99 71; --pine-dark: 14 61 44; --pine-soft: 224 237 228;
+    --gold: 173 116 27; --gold-soft: 246 234 205;
+    --rust: 176 62 45; --rust-soft: 249 226 219;
+    --steel: 51 91 122; --steel-soft: 222 231 238;
+    --slate: 100 107 95; --slate-soft: 232 234 227;
+    --shadow-ink: 24 32 27;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) {
+      --paper: 15 16 14; --paper-raised: 24 26 22; --paper-line: 46 49 42;
+      --ink: 237 240 233; --ink-soft: 186 193 177; --ink-faint: 124 130 115;
+      --pine: 92 176 138; --pine-dark: 56 120 88; --pine-soft: 24 44 34;
+      --gold: 216 170 92; --gold-soft: 50 42 22;
+      --rust: 227 140 120; --rust-soft: 54 32 27;
+      --steel: 141 180 213; --steel-soft: 26 40 51;
+      --slate: 168 175 160; --slate-soft: 34 36 30;
+      --shadow-ink: 0 0 0;
+    }
+  }
+  /* Explicit user choice (via the toggle) always wins over OS preference. */
+  :root[data-theme="dark"] {
+    --paper: 15 16 14; --paper-raised: 24 26 22; --paper-line: 46 49 42;
+    --ink: 237 240 233; --ink-soft: 186 193 177; --ink-faint: 124 130 115;
+    --pine: 92 176 138; --pine-dark: 56 120 88; --pine-soft: 24 44 34;
+    --gold: 216 170 92; --gold-soft: 50 42 22;
+    --rust: 227 140 120; --rust-soft: 54 32 27;
+    --steel: 141 180 213; --steel-soft: 26 40 51;
+    --slate: 168 175 160; --slate-soft: 34 36 30;
+    --shadow-ink: 0 0 0;
+  }
+  :root[data-theme="light"] {
+    --paper: 255 255 255; --paper-raised: 246 247 244; --paper-line: 227 229 223;
+    --ink: 24 32 27; --ink-soft: 82 94 85; --ink-faint: 133 140 128;
+    --pine: 22 99 71; --pine-dark: 14 61 44; --pine-soft: 224 237 228;
+    --gold: 173 116 27; --gold-soft: 246 234 205;
+    --rust: 176 62 45; --rust-soft: 249 226 219;
+    --steel: 51 91 122; --steel-soft: 222 231 238;
+    --slate: 100 107 95; --slate-soft: 232 234 227;
+    --shadow-ink: 24 32 27;
+  }
+  html { color-scheme: light dark; }
+  .theme-toggle .icon-sun, .theme-toggle .icon-moon { display: none; }
+  :root[data-theme="dark"] .theme-toggle .icon-sun { display: inline-flex; }
+  :root[data-theme="light"] .theme-toggle .icon-moon { display: inline-flex; }
+  body { background: rgb(var(--paper)); color: rgb(var(--ink)); font-family: 'Manrope', ui-sans-serif, sans-serif; }
+  .font-heading { font-family: 'Source Serif 4', serif; }
+  .font-ledger { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+  [x-cloak] { display: none !important; }
+
+  /* Soft warm-tinted card shadow, standing in for the flatter border-only
+     look — reinforces depth without breaking the paper/ledger metaphor. */
+  .panel {
+    box-shadow: 0 1px 2px rgb(var(--shadow-ink) / 0.05), 0 4px 14px -4px rgb(var(--shadow-ink) / 0.09);
+    transition: box-shadow .18s ease, transform .18s ease, border-color .18s ease, background-color .18s ease;
+  }
+  a.panel:hover, button.panel:hover {
+    box-shadow: 0 2px 4px rgb(var(--shadow-ink) / 0.06), 0 10px 24px -6px rgb(var(--shadow-ink) / 0.14);
+    transform: translateY(-1px);
+  }
+  .accent-bar { position: relative; }
+  .accent-bar::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    border-radius: 3px 0 0 3px; background: var(--accent-color, transparent);
+  }
+</style>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          paper: { DEFAULT: 'rgb(var(--paper) / <alpha-value>)', raised: 'rgb(var(--paper-raised) / <alpha-value>)', line: 'rgb(var(--paper-line) / <alpha-value>)' },
+          ink: { DEFAULT: 'rgb(var(--ink) / <alpha-value>)', soft: 'rgb(var(--ink-soft) / <alpha-value>)', faint: 'rgb(var(--ink-faint) / <alpha-value>)' },
+          pine: { DEFAULT: 'rgb(var(--pine) / <alpha-value>)', dark: 'rgb(var(--pine-dark) / <alpha-value>)', soft: 'rgb(var(--pine-soft) / <alpha-value>)' },
+          gold: { DEFAULT: 'rgb(var(--gold) / <alpha-value>)', soft: 'rgb(var(--gold-soft) / <alpha-value>)' },
+          rust: { DEFAULT: 'rgb(var(--rust) / <alpha-value>)', soft: 'rgb(var(--rust-soft) / <alpha-value>)' },
+          steel: { DEFAULT: 'rgb(var(--steel) / <alpha-value>)', soft: 'rgb(var(--steel-soft) / <alpha-value>)' },
+          slate: { DEFAULT: 'rgb(var(--slate) / <alpha-value>)', soft: 'rgb(var(--slate-soft) / <alpha-value>)' },
+        },
+      },
+    },
+  };
+</script>
+{% block head %}{% endblock %}
+</head>
+<body class="min-h-screen">
+  {% from "partials/_icons.html" import icon %}
+  <div class="flex min-h-screen">
+    <aside class="hidden md:flex md:w-60 md:flex-col md:border-r border-paper-line bg-paper-raised px-4 py-6">
+      <a href="{{ url_for('dashboard') }}" class="mb-9 flex items-center gap-2.5 px-2">
+        <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-pine to-pine-dark font-heading text-base font-bold text-paper shadow-sm">
+          G
+        </span>
+        <span class="font-heading text-lg font-semibold text-ink tracking-tight">GreenGrowth</span>
+      </a>
+      <nav class="flex flex-col gap-1">
+        <a href="{{ url_for('dashboard') }}"
+           class="accent-bar flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition-colors {{ 'bg-pine-soft text-pine-dark [--accent-color:rgb(var(--pine))]' if request.path.startswith('/dashboard') else 'text-ink-soft hover:bg-paper hover:text-ink' }}">
+          {{ icon('dashboard', 16) }} Dashboard
+        </a>
+        <a href="{{ url_for('returns_list') }}"
+           class="accent-bar flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition-colors {{ 'bg-pine-soft text-pine-dark [--accent-color:rgb(var(--pine))]' if request.path.startswith('/returns') else 'text-ink-soft hover:bg-paper hover:text-ink' }}">
+          {{ icon('folder', 16) }} Returns
+        </a>
+      </nav>
+      <div class="mt-auto space-y-3">
+        <form method="post" action="{{ url_for('reset_demo') }}">
+          <button class="flex w-full items-center justify-center gap-1.5 rounded-md border border-paper-line px-3 py-2 text-xs font-medium text-ink-faint transition-colors hover:bg-paper hover:text-ink">
+            {{ icon('reset', 13) }} Reset demo data
+          </button>
+        </form>
+        <div class="rounded-lg border border-paper-line bg-paper px-3 py-3 panel">
+          <p class="text-xs font-medium text-ink-faint">Signed in as</p>
+          <p class="mt-0.5 text-sm font-medium text-ink">Janelle Ruiz, CPA</p>
+          <p class="text-xs text-ink-faint">Senior Preparer</p>
+        </div>
+      </div>
+    </aside>
+    <main class="flex-1 min-w-0">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</body>
+</html>

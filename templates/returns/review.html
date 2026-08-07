@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Review — {{ r.display_name }} — GreenGrowth{% endblock %}
+{% block content %}
+<div class="w-full px-8 py-8 md:px-12">
+  {% set active_tab = 'review' %}
+  {% set view = 'staff' %}
+  {% include "partials/_return_header.html" %}
+
+  <div class="mt-6 grid gap-6 lg:grid-cols-[1fr_1.1fr]">
+    <div class="space-y-6">
+      <div class="flex flex-wrap items-center gap-2 rounded-md border border-paper-line bg-paper px-3 py-2.5 text-xs text-ink-faint">
+        <span class="font-medium text-ink-soft">Field states:</span>
+        {% from "partials/_badges.html" import field_state_badge %}
+        {{ field_state_badge('locked', compact=true) }}
+        {{ field_state_badge('editable', compact=true) }}
+        {{ field_state_badge('ai_pending', compact=true) }}
+        {{ field_state_badge('verified', compact=true) }}
+      </div>
+      {% include "partials/field_list.html" %}
+    </div>
+
+    <div class="lg:sticky lg:top-6 lg:self-start">
+      {% include "partials/field_detail.html" %}
+    </div>
+  </div>
+</div>
+{% endblock %}

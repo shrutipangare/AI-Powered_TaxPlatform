@@ -1,0 +1,62 @@
+{% macro status_badge(status, mode='staff', size='md') %}
+{% set meta = STATUS_META[status] %}
+{% set label = meta.client_label if mode == 'client' else meta.staff_label %}
+{% set color = meta.color %}
+<span class="inline-flex items-center gap-1.5 rounded-full border px-2.5 font-medium
+  {% if color == 'amber' or color == 'gold' %}bg-gold-soft text-gold border-gold/30
+  {% elif color == 'pine' %}bg-pine-soft text-pine-dark border-pine/30
+  {% elif color == 'steel' %}bg-steel-soft text-steel border-steel/30
+  {% elif color == 'rust' %}bg-rust-soft text-rust border-rust/30
+  {% else %}bg-slate-soft text-slate border-slate/30{% endif %}
+  {{ 'py-0.5 text-xs' if size == 'sm' else 'py-1 text-sm' }}">
+  <span class="h-1.5 w-1.5 rounded-full
+    {% if color == 'amber' or color == 'gold' %}bg-gold
+    {% elif color == 'pine' %}bg-pine
+    {% elif color == 'steel' %}bg-steel
+    {% elif color == 'rust' %}bg-rust
+    {% else %}bg-slate{% endif %}"></span>
+  {{ label }}
+</span>
+{% endmacro %}
+
+{% macro priority_badge(priority) %}
+{% set meta = {
+  'urgent': ('Urgent', 'rust'), 'high': ('High', 'gold'),
+  'normal': ('Normal', 'steel'), 'low': ('Low', 'slate')
+}[priority] %}
+{% set label, color = meta %}
+<span class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium
+  {% if color == 'gold' %}bg-gold-soft text-gold border-gold/30
+  {% elif color == 'rust' %}bg-rust-soft text-rust border-rust/30
+  {% elif color == 'steel' %}bg-steel-soft text-steel border-steel/30
+  {% else %}bg-slate-soft text-slate border-slate/30{% endif %}">
+  <span class="h-1.5 w-1.5 rounded-full
+    {% if color == 'gold' %}bg-gold{% elif color == 'rust' %}bg-rust
+    {% elif color == 'steel' %}bg-steel{% else %}bg-slate{% endif %}"></span>
+  {{ label }}
+</span>
+{% endmacro %}
+
+{% macro field_state_badge(state, compact=false) %}
+{% set meta = {
+  'locked': ('Locked', '🔒', 'bg-slate-soft text-slate border-slate/30'),
+  'editable': ('Editable', '✏️', 'bg-steel-soft text-steel border-steel/30'),
+  'ai_pending': ('AI-generated · Pending approval', '✨', 'bg-gold-soft text-gold border-gold/30'),
+  'verified': ('Verified', '✅', 'bg-pine-soft text-pine-dark border-pine/30'),
+}[state] %}
+{% set label, icon, cls = meta %}
+<span class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium whitespace-nowrap {{ cls }}" title="{{ label }}">
+  <span>{{ icon }}</span>{{ label.split(' · ')[0] if compact else label }}
+</span>
+{% endmacro %}
+
+{% macro confidence_pill(confidence) %}
+{% set pct = (confidence * 100) | round | int %}
+{% set tone = 'pine' if confidence >= 0.85 else ('gold' if confidence >= 0.65 else 'rust') %}
+<span class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-ledger text-xs font-medium
+  {% if tone == 'pine' %}bg-pine-soft text-pine-dark border-pine/30
+  {% elif tone == 'gold' %}bg-gold-soft text-gold border-gold/30
+  {% else %}bg-rust-soft text-rust border-rust/30{% endif %}">
+  {{ pct }}% confidence
+</span>
+{% endmacro %}
