@@ -10,7 +10,6 @@ four of the ten challenges:
 - **10 — Trustworthy AI**
 
 **Live demo:** https://ai-powered-taxplatform.onrender.com
-(free-tier hosting — if it's asleep, the first load takes 30–60s to wake up)
 
 ---
 
@@ -79,12 +78,7 @@ below for why.
 
 ## Stack
 
-Flask 3 · Jinja2 · htmx · Alpine.js · Tailwind CSS (via CDN). Chosen to
-match GreenGrowth's actual production stack (Python/Flask/Postgres on AWS
-Lightsail, Tailwind) rather than defaulting to a React SPA — the case study
-explicitly grades frontend/interaction quality and says the backend can be
-"quick and dirty," so the extra realism here costs nothing on the axis that
-matters and signals I can work directly in the stack the team already runs.
+Flask 3 · Jinja2 · htmx · Alpine.js · Tailwind CSS (via CDN)
 
 **Interaction model:** full page loads for real navigation (return tabs,
 list → detail), htmx partial swaps for everything that should feel instant
@@ -227,16 +221,6 @@ Copy `.env.example` to `.env` and fill it in to enable that feature locally.
 
 ## Decisions worth explaining
 
-- **Chose Flask over a React SPA** to match GreenGrowth's real stack
-  (Python/Flask/Postgres, Tailwind) instead of defaulting to the tool every
-  other candidate reaches for. In production I'd wire this into the
-  existing Flask/Postgres monolith and use the QuickBooks Intuit API for
-  the real document/transaction sync instead of fabricated extraction.
-- **Visual design deliberately avoids the default "AI SaaS" look**
-  (indigo/purple gradients, glassy cards). It uses a warm paper background,
-  a single deep-green brand color, serif headings, and a monospace
-  treatment for every dollar figure — meant to read like a well-kept
-  ledger that happens to have AI running underneath it.
 - **The AI-field approval flow is a two-step confirm, not a single click**
   — mirroring a `confirm=False` → `confirm=True` gate pattern from a
   trading agent I built, where nothing with financial consequence executes
