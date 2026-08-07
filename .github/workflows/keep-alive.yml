@@ -1,0 +1,17 @@
+name: Keep Render app awake
+
+# Render's free tier spins the app down after ~15 min of no traffic, and the
+# next request pays a 30-60s cold-start cost. This just pings the live URL
+# often enough that a reviewer clicking the link never sees that wait.
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping the live app
+        run: curl -sS -o /dev/null -w "HTTP %{http_code}\n" https://ai-powered-taxplatform.onrender.com/dashboard

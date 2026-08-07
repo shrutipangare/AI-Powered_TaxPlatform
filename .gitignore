@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# misc
+.DS_Store
+*.pem
+
+# env files (can opt-in for committing if needed)
+.env*
+!.env.example
+
+# reference dump from the earlier Next.js build, not part of the app
+_ref/
